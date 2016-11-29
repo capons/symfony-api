@@ -8,6 +8,10 @@ use FOS\RestBundle\FOSRestBundle;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use FOS\RestBundle\Controller\Annotations as Rest;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
+
 
 use AppBundle\Entity\User;
 use AppBundle\Entity\Group;
@@ -22,13 +26,14 @@ use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 
 
 
-/**
- * @RouteResource("User", pluralize=false)
- */
+
 class RestController extends FOSRestController
 {
-
-    public function cgetAction(Request $request)
+    //display all user
+    /**
+     * @Rest\Get("/user")
+     * */
+    public function getTestAction(Request $request)
     {
 
         $response = array();
@@ -46,21 +51,29 @@ class RestController extends FOSRestController
 
         return new Response($serializer->serialize($response,'json'));
 
-
-
-
-
-
     }
 
-    public function newAction()
+
+    /**
+     * @Rest\Get("/user/{id}")
+     */
+    public function idAction($id)
     {
+        //display only one user
+        $serializer = $this->get('jms_serializer');
+        return new Response($serializer->serialize($id,'json'));
+    }
 
-    } // "new_user"     [GET] /user/new
 
+
+
+    /**
+     * @Rest\Post("/user/")
+     */
     //save new user
     public function postAction($slug,Request $request)
     {
+
 
         header("Access-Control-Allow-origin: *");
         header("Content-Type: application/json");
@@ -148,15 +161,48 @@ class RestController extends FOSRestController
         return new JsonResponse($response);
     }
 
-    // ...
-    public function getCommentAction($slug)
+
+    /**
+     * Rest\Delete("/user/{id}")
+     * @Route("/user/{id}")
+     * @Method({"GET","DELETE"})
+     */
+    public function deleteUserAction($id)
     {
-        header("Access-Control-Allow-origin: *");
-        header("Content-Type: application/json");
-        header("Cache-Control: no-cache");
 
-        return new JsonResponse(array("test"=>$slug));
-    } // "cget_user_comment"    [GET] /user/{slug}/comment
+        $result = array();
+        $em = $this->getDoctrine()->getManager();
+        $product = $em->getRepository('AppBundle:User')->find($id);
+        if (!$product) {
+            $result['code'] = 201;
+        }
 
-    // ...
+        $em->remove($product);
+        $em->flush();
+
+
+
+
+        return new JsonResponse();
+
+
+        /*
+        $data = new User;
+        $sn = $this->getDoctrine()->getManager();
+        $user = $this->getDoctrine()->getRepository('AppBundle:User')->find($id);
+        if (empty($user)) {
+            return new View("user not found", Response::HTTP_NOT_FOUND);
+        }
+        else {
+            $sn->remove($user);
+            $sn->flush();
+        }
+        return new View("deleted successfully", Response::HTTP_OK);
+        */
+    }
+
+
+
+
+
 }

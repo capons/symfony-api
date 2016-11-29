@@ -71,7 +71,9 @@ swiftmailer:
     spool:     { type: memory }
 
 
+nelmio_api_doc: ~
 
+# FOS Rest controller config
 fos_rest:
     routing_loader:
         default_format: json
